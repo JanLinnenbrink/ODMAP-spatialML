@@ -52,3 +52,23 @@ table.dataTable tbody tr {
 table.dataTable tbody td {
 	padding: 10px 18px;
 }
+
+
+.input-with-tooltip {
+  position: relative;
+}
+
+.input-label-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-hover-icon {
+  display: none;
+  color: #007BFF;
+}
+
+.input-with-tooltip:hover .info-hover-icon {
+  display: inline;
+}

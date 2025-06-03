@@ -8,21 +8,45 @@ library(DT)
 
 
 ui <-  tagList(
-  tags$head(tags$style(HTML(readChar("www/odmap.css", file.info("www/odmap.css")$size)))),
+  tags$head(
+    tags$style(HTML(readChar("www/odmap.css", file.info("www/odmap.css")$size))),
+    tags$style(HTML("...tooltip CSS here...")),
+    tags$script(HTML('
+  $(function () {
+    $("[data-toggle=\'tooltip\']").tooltip();
+  });
+')),
+    tags$style(HTML("
+  .input-label-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-hover-icon {
+    display: none;
+    color: #007BFF;
+    margin-left: 4px;
+    cursor: pointer;
+  }
+  .input-label-icon:hover .info-hover-icon {
+    display: inline;
+  }
+"))
+  ),
   useShinyjs(),
 
   navbarPage(
     id = "navbar",
-    windowTitle = "ODMAP v1.0",
+    windowTitle = "STeMP v0.9",
     title = div(
       div(
         id = "github_logo", 
         a(img(src="github_logo_40px.png"), href = "https://github.com/UP-macroecology/ODMAP", target="_blank")
       ),
-      "ODMAP v1.0"
+      "STeMP v0.9"
     ),
     position = "fixed-top",
-    theme = shinytheme("cosmo"),
+    theme = shinytheme("united"), #darkly, united
     selected = "about",
   
     # HOME TAB
