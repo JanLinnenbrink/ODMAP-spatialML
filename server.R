@@ -329,11 +329,11 @@ server <- function(input, output, session) {
   # ------------------------------------------------------------------------------------------#
   #                           Rendering functions for UI elements                             # 
   # ------------------------------------------------------------------------------------------#
-  render_text <- function(element_id, element_placeholder, info_text = NULL) {
+  render_text <- function(element_id, element, info_text = NULL) {
     # Create textarea input with placeholder (empty value) and tooltip
     inputTag <- textAreaInput(
       inputId = element_id,
-      label = element_placeholder,
+      label = NULL,
       height = "45px",
       resize = "vertical"
     )
@@ -353,7 +353,7 @@ server <- function(input, output, session) {
     # Combine label + tooltip icon
     labelWithTooltip <- div(
       class = "input-label-icon",
-      tags$label(`for` = element_id, element_placeholder),
+      tags$label(`for` = element_id, style = "font-weight: normal;", element),
       infoIcon
     )
     
@@ -374,23 +374,27 @@ server <- function(input, output, session) {
     )
   }
   
-  render_objective = function(element_id, element_placeholder){
-    selectizeInput(inputId = element_id, label = NULL, multiple = F, options = list(create = T, placeholder = "Choose from list"),
-                   choices = list("", "Inference and explanation", "Mapping and interpolation"))
+  render_objective <- function(element_id, element) {
+    radioButtons(
+      inputId = element_id,
+      label = element,
+      choices = c("Model only", "Model and prediction"),
+      selected = "Model only"
+    )
   }
   
   # Render UI for extracted model information
-  render_n_samples = function(element_id, element_placeholder) {
+  render_n_samples = function(element_id, element) {
     value <- if (!is.null(num_training_samples())) num_training_samples() else NULL
     tagList(numericInput("d_response_3", "Number of Training Samples*", value = value))
   }
   
-  render_n_predictors = function(element_id, element_placeholder) {
+  render_n_predictors = function(element_id, element) {
     value <- if (!is.null(num_predictors())) num_predictors() else NULL
     tagList(numericInput("d_predictors_2", "Number of Predictors*", value = num_predictors()))
   }
   
-  render_n_classes = function(element_id, element_placeholder) {
+  render_n_classes = function(element_id, element) {
     value <- if (!is.null(num_classes())) num_classes() else NULL
     inputWithHoverInfo(
       numericInput("d_response_4", "Number of Classes", value = value),
@@ -398,7 +402,7 @@ server <- function(input, output, session) {
     )
   }
   
-  render_n_samples_class = function(element_id, element_placeholder) {
+  render_n_samples_class = function(element_id, element) {
     value <- if (!is.null(num_samples_per_class())) num_samples_per_class() else NULL
     inputWithHoverInfo(
       numericInput("d_response_5", "Number of Samples per Class", value = value),
@@ -406,7 +410,7 @@ server <- function(input, output, session) {
     )
   }
   
-  render_range = function(element_id, element_placeholder) {
+  render_range = function(element_id, element) {
     value <- if (!is.null(interpolation_range())) interpolation_range() else NULL
     inputWithHoverInfo(
       textInput("d_response_6", "Response Range", value = value),
@@ -414,7 +418,7 @@ server <- function(input, output, session) {
     )
   }
   
-  render_names_predictors = function(element_id, element_placeholder) {
+  render_names_predictors = function(element_id, element) {
     value <- if (!is.null(names_predictors())) names_predictors() else NULL
     inputWithHoverInfo(
       textInput("d_predictors_3", "Names of Predictors", value = value),
@@ -422,7 +426,7 @@ server <- function(input, output, session) {
     )
   } 
   
-  render_hyperparameters = function(element_id, element_placeholder) {
+  render_hyperparameters = function(element_id, element) {
     value <- if (!is.null(model_hyperparams())) model_hyperparams() else NULL
     inputWithHoverInfo(
       textInput("m_validation_3", "Hyperparameter values", value = value),
@@ -430,14 +434,14 @@ server <- function(input, output, session) {
     )
   } 
   
-  render_model_type = function(element_id, element_placeholder) {
+  render_model_type = function(element_id, element) {
     selectInput("m_algorithms_1", "Model Type*",
                 choices = c("", "Classification", "Regression"),
                 selected = model_type())
     
   }
   
-  render_model_algorithm = function(element_id, element_placeholder) {
+  render_model_algorithm = function(element_id, element) {
     # Default list of known algorithms
     default_algos <- c("rf", "gbm", "glm", "svmRadial", "nnet", "rpart")
     selected_algo <- model_algorithm()
@@ -457,7 +461,7 @@ server <- function(input, output, session) {
     
   }
   
-  render_crs = function(element_id, element_placeholder) {
+  render_crs = function(element_id, element) {
     value <- if (!is.null(num_classes())) num_classes() else NULL
     inputWithHoverInfo(
       textInput(
@@ -469,7 +473,7 @@ server <- function(input, output, session) {
     )
   } 
   
-  render_design = function(element_id, element_placeholder){
+  render_design = function(element_id, element){
     
     req(samples_valid(), prediction_valid())
     
@@ -530,18 +534,18 @@ server <- function(input, output, session) {
 
   
   ## Render other stuff -----------
-  render_suggestion = function(element_id, element_placeholder, suggestions){
+  render_suggestion = function(element_id, element, suggestions){
     suggestions = sort(trimws(unlist(strsplit(suggestions, ","))))
-    selectizeInput(inputId = element_id, label = element_placeholder, choices = suggestions, multiple = TRUE, options = list(create = T,  placeholder = "Choose from list or insert new values"))
+    selectizeInput(inputId = element_id, label = element, choices = suggestions, multiple = TRUE, options = list(create = T,  placeholder = "Choose from list or insert new values"))
   }
   
-  render_suggestion_single = function(element_id, element_placeholder, suggestions){
+  render_suggestion_single = function(element_id, element, suggestions){
     suggestions = sort(trimws(unlist(strsplit(suggestions, ","))))
     suggestions = suggestions[suggestions != ""]  # Remove blanks
     
     selectizeInput(
       inputId = element_id,
-      label = element_placeholder,
+      label = element,
       choices = suggestions,
       selected = character(0),  # Ensures nothing is selected -- doesnt work!!!
       multiple = FALSE,
@@ -576,11 +580,11 @@ server <- function(input, output, session) {
         element_UI_list = vector("list", 3) # holds UI elements for current element 
         
         # First element: Header 
-        if(subsection != section_dict$subsection_id[i]){
-          subsection = section_dict$subsection_id[i]
-          subsection_label = section_dict$subsection[i]
-          element_UI_list[[1]] = div(id = section_dict$subsection_id[i], h5(subsection_label, style = "font-weight: bold"))
-        }
+        # if(subsection != section_dict$subsection_id[i]){
+        #   subsection = section_dict$subsection_id[i]
+        #   subsection_label = section_dict$subsection[i]
+        #   element_UI_list[[1]] = div(id = section_dict$subsection_id[i], h5(subsection_label, style = "font-weight: bold"))
+        # }
         
         ## Create label with info icon (tooltip)
         label_with_tooltip <- tags$span(
@@ -602,33 +606,33 @@ server <- function(input, output, session) {
                                       ## 🟨 MODIFIED: Pass label_with_tooltip to text input
                                       text = render_text(
                                         element_id = section_dict$element_id[i],
-                                        element_placeholder = section_dict$element_placeholder[i],
+                                        element = section_dict$element[i],
                                         info_text = section_dict$info_text[i]
                                       ),
                                       author = render_authors(),
-                                      objective = render_objective(section_dict$element_id[i], section_dict$element_placeholder[i]),
+                                      objective = render_objective(section_dict$element_id[i], section_dict$element[i]),
                                       
-                                      sample_size = render_n_samples(section_dict$element_id[i], section_dict$element_placeholder[i]),
-                                      n_predictors = render_n_predictors(section_dict$element_id[i], section_dict$element_placeholder[i]),
-                                      names_predictors = render_names_predictors(section_dict$element_id[i], section_dict$element_placeholder[i]),
+                                      sample_size = render_n_samples(section_dict$element_id[i], section_dict$element[i]),
+                                      n_predictors = render_n_predictors(section_dict$element_id[i], section_dict$element[i]),
+                                      names_predictors = render_names_predictors(section_dict$element_id[i], section_dict$element[i]),
                                       
-                                      n_classes = render_n_classes(section_dict$element_id[i], section_dict$element_placeholder[i]),
-                                      n_samples_per_class = render_n_samples_class(section_dict$element_id[i], section_dict$element_placeholder[i]),
+                                      n_classes = render_n_classes(section_dict$element_id[i], section_dict$element[i]),
+                                      n_samples_per_class = render_n_samples_class(section_dict$element_id[i], section_dict$element[i]),
                                       
                                       interpolation_range = {
                                         if (!is.null(model_type()) && model_type() == "Classification") {
                                           NULL  # Hide interpolation_range for classification models
                                         } else {
-                                          render_range(section_dict$element_id[i], section_dict$element_placeholder[i])
+                                          render_range(section_dict$element_id[i], section_dict$element[i])
                                         }},
                                         
-                                      hyperparams = render_hyperparameters(section_dict$element_id[i], section_dict$element_placeholder[i]),
+                                      hyperparams = render_hyperparameters(section_dict$element_id[i], section_dict$element[i]),
 
-                                      model_type = render_model_type(section_dict$element_id[i], section_dict$element_placeholder[i]),
-                                      model_algorithm = render_model_algorithm(section_dict$element_id[i], section_dict$element_placeholder[i]),
+                                      model_type = render_model_type(section_dict$element_id[i], section_dict$element[i]),
+                                      model_algorithm = render_model_algorithm(section_dict$element_id[i], section_dict$element[i]),
                                       
-                                      sampling_design = render_design(section_dict$element_id[i], section_dict$element_placeholder[i]),
-                                      samples_crs = render_crs(section_dict$element_id[i], section_dict$element_placeholder[i]),
+                                      sampling_design = render_design(section_dict$element_id[i], section_dict$element[i]),
+                                      samples_crs = render_crs(section_dict$element_id[i], section_dict$element[i]),
                                       
                                       ## 🟨 MODIFIED: Use label_with_tooltip in suggestion inputs
                                       suggestion_single = render_suggestion_single(section_dict$element_id[i], label_with_tooltip, section_dict$suggestions[i]),
@@ -1012,11 +1016,9 @@ server <- function(input, output, session) {
   })
   
   # Monitor current progress
-  elem_hide = list("Inference and explanation" = c(pull(odmap_dict %>% filter(inference == 0), element_id), # unused elements
-                                                   unique(pull(odmap_dict %>% group_by(subsection_id) %>% filter(all(inference  == 0)), subsection_id)), # unused subsections
-                                                   "p"),
-                   "Prediction and mapping" =  c(pull(odmap_dict %>% filter(prediction == 0), element_id), 
-                                                 unique(pull(odmap_dict %>% group_by(subsection_id) %>% filter(all(prediction == 0)), subsection_id))))
+  elem_hide = list("Model only" = c(pull(odmap_dict %>% filter(prediction == 0), element_id), # unused elements
+                                                   unique(pull(odmap_dict %>% group_by(subsection_id) %>% filter(all(prediction  == 0)), subsection_id)), # unused subsections
+                                                   "p"))
   
   elem_optional = c(pull(odmap_dict %>% filter(optional == 1), element_id), # optional elements
                     unique(pull(odmap_dict %>% group_by(subsection_id) %>% filter(all(optional == 1)), subsection_id))) # optional subsections)
@@ -1028,18 +1030,31 @@ server <- function(input, output, session) {
   # ------------------------------------------------------------------------------------------#
   # Study objective
   observeEvent(input$o_objective_1, {
-    # Dynamically show/hide corresponding input fields
-    shinyjs::show(selector = paste0("#", setdiff(elem_hidden, elem_hide[[input$o_objective_1]])))
-    shinyjs::hide(selector = paste0("#", elem_hide[[input$o_objective_1]]))
-    elem_hidden <<- elem_hide[[input$o_objective_1]]
+    # Elements to hide for selected objective
+    to_hide <- elem_hide[[input$o_objective_1]]
     
-    # Show/hide Prediction tab when study objective is inference
-    if(input$o_objective_1 == "Inference and explanation"){
+    # Elements to show: everything that's *not* in to_hide
+    to_show <- setdiff(unlist(elem_hide), to_hide)
+    
+    # Show and hide using shinyjs
+    lapply(to_show, function(id) {
+      shinyjs::show(id)
+    })
+    lapply(to_hide, function(id) {
+      shinyjs::hide(id)
+    })
+    
+    # Update global tracking variable
+    elem_hidden <<- to_hide
+    
+    # Hide Prediction tab if "Model only" is selected
+    if (input$o_objective_1 == "Model only") {
       hideTab("tabset", "Prediction")
     } else {
       showTab("tabset", "Prediction")
     }
   })
+  
   
   
   # -------------------------------------------

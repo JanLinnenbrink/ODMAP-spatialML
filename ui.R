@@ -26,7 +26,6 @@ ui <-  tagList(
     display: none;
     color: #007BFF;
     margin-left: 4px;
-    cursor: pointer;
   }
   .input-label-icon:hover .info-hover-icon {
     display: inline;
@@ -157,25 +156,28 @@ ui <-  tagList(
                    ))),
           
           tabPanel("3. Prediction", fluidPage(
-            bsCollapse(
-              bsCollapsePanel("Prediction domain", style = "primary",
-                              fileInput("prediction_upload", "Upload prediction area (.gpkg)", accept = ".gpkg"),
-                              conditionalPanel(
-                                condition = "output.show_predictionArea == 'true'",
-                                plotOutput("p_pred", height = "400px")
-                              ),
-                              conditionalPanel(
-                                condition = "output.showGeodist == 'true'",
-                                plotOutput("geodist", height = "200px")
-                              ),
-                              uiOutput("Prediction_UI_area")),
-              bsCollapsePanel("Evaluation and Uncertainty", style = "primary",
-                              uiOutput("Prediction_UI_eval")),
-              bsCollapsePanel("Post-Processing", style = "primary",
-                              uiOutput("Prediction_UI_post"))
-              
+            conditionalPanel(
+              condition = "input.o_objective_1 == 'Model and prediction'",
+              bsCollapse(
+                bsCollapsePanel("Prediction domain", style = "primary",
+                                fileInput("prediction_upload", "Upload prediction area (.gpkg)", accept = ".gpkg"),
+                                conditionalPanel(
+                                  condition = "output.show_predictionArea == 'true'",
+                                  plotOutput("p_pred", height = "400px")
+                                ),
+                                conditionalPanel(
+                                  condition = "output.showGeodist == 'true'",
+                                  plotOutput("geodist", height = "200px")
+                                ),
+                                uiOutput("Prediction_UI_area")),
+                bsCollapsePanel("Evaluation and Uncertainty", style = "primary",
+                                uiOutput("Prediction_UI_eval")),
+                bsCollapsePanel("Post-Processing", style = "primary",
+                                uiOutput("Prediction_UI_post"))
+              )
             )
           ))
+          
         ))
     )),
     
